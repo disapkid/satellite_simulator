@@ -12,6 +12,8 @@ struct simulate
     double simulation_t = 0;
 
     std::mutex mutex;
+    std::atomic<bool> initialized{false};
+    std::atomic<bool> running{true};
 
     void step() {
         std::for_each(node.begin(), node.end(), [&] (Satellite_node& sn) {
@@ -19,6 +21,11 @@ struct simulate
         });
 
         simulation_t += dt;
+    }
+
+    coord get_pos(int i) {
+        std::lock_guard<std::mutex> mtx(mutex);
+        return node[i].sat.get_pos();
     }
 };
 
@@ -58,23 +65,28 @@ std::vector<Satellite_node> init_nodes(int N) {
     return vec;
 }
 
-void start_simulate() {
-    simulate sim;
-    sim.node = init_nodes(40);
+void start_simulate(simulate& sim, int N) {
+    using namespace std::chrono;
 
-    auto time_start = std::chrono::steady_clock::now();
-
-    while (true)
     {
-        auto now = std::chrono::steady_clock::now();
+        std::lock_guard<std::mutex> lg(sim.mutex);
+        sim.node = init_nodes(N);
+        sim.initialized = true;
+    }
 
-        double t_passed = std::chrono::duration<double>(now - time_start).count();
+    auto time_start = steady_clock::now();
+
+    while (sim.running)
+    {
+        auto now = steady_clock::now();
+
+        double t_passed = duration<double>(now - time_start).count();
 
         std::lock_guard<std::mutex> mtx(sim.mutex);
         while(sim.dt + sim.simulation_t <= t_passed) {
             sim.step();
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(milliseconds(1));
     }
 }

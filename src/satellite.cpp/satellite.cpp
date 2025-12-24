@@ -1,6 +1,6 @@
 #include <satellite.hpp>
 
-inline double Satellite::norm(const coord& r) const{
+double Satellite::norm(const coord& r) const{
     auto phi = r.x * r.x + r.y * r.y + r.z * r.z;
     return std::sqrt(phi);
 }
@@ -65,7 +65,7 @@ void Satellite::step(double dt) {
     velocity.z += dt / 6 * (k1_v.z + 2*k2_v.z + 2*k3_v.z + k4_v.z);
 }
 
-inline coord Satellite::accel(const coord& r) const{
+coord Satellite::accel(const coord& r) const{
     auto r_k = Satellite::norm(r);
     auto r3 = pow(r_k,3);
 
@@ -81,7 +81,7 @@ inline coord Satellite::accel(const coord& r) const{
     return coord(x_k, x_y, x_z);
 }
 
-inline coord Satellite::accel_j(const coord& r) const{
+coord Satellite::accel_j(const coord& r) const{
     coord a_j;
     auto r_k = Satellite::norm(r);
     constexpr double j2 = 1.08262668e-3;

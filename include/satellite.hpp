@@ -28,9 +28,9 @@ public:
 private:
     double norm(const coord& r) const;
 
-    inline coord accel(const coord& r) const;
+    coord accel(const coord& r) const;
 
-    inline coord accel_j(const coord& r) const;
+    coord accel_j(const coord& r) const;
 
     coord current_coord{};
     coord velocity{};
