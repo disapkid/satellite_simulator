@@ -25,7 +25,7 @@ public:
 
     coord get_pos() const;
 
-    void 
+    void update_node();
 
 private:
     double norm(const coord& r) const;

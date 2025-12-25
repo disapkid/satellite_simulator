@@ -4,7 +4,7 @@
 #include <vector>
 
 struct Edge {
-    uint64_t to;     
+    uint64_t to;
     double weight;
 };
 
@@ -13,7 +13,13 @@ struct VirtualGraph {
     std::unordered_map<uint64_t, std::vector<Edge>> adj;
 };
 
-// Построение графа сети 
+double distance(const Virtual_node& a, const Virtual_node& b) {
+    double dx = a.get_coord().x - b.get_coord().x;
+    double dy = a.get_coord().y - b.get_coord().y;
+    double dz = a.get_coord().z - b.get_coord().z;
+    return std::sqrt(dx*dx + dy*dy + dz*dz);
+}
+
 VirtualGraph buildGrid() {
     constexpr int M = 6;
     constexpr int N = 11;
@@ -21,7 +27,7 @@ VirtualGraph buildGrid() {
 
     VirtualGraph g;
 
-    inline auto vid = [&](int p, int k) {
+    auto vid = [&](int p, int k) -> uint64_t {
         return static_cast<uint64_t>(p * N + k);
     };
 
@@ -40,21 +46,35 @@ VirtualGraph buildGrid() {
         for (int k = 0; k < N; ++k) {
             uint64_t v = vid(p, k);
 
-            auto add_edge = [&](uint64_t to) {
-                g.adj[v].push_back({to, 1.0});
+            auto add_edge = [&](uint64_t from, uint64_t to) {
+                const auto& A = g.nodes.at(from);
+                const auto& B = g.nodes.at(to);
+                double w = distance(A, B);
+                g.adj[from].push_back({to, w});
             };
 
-            add_edge(vid(p, (k + 1) % N));
-            add_edge(vid(p, (k - 1 + N) % N));
 
-            int p_next = (p + 1) % M;
-            int p_prev = (p - 1 + M) % M;
+            if (k + 1 < N) {
+                add_edge(v, vid(p, k + 1));
+                add_edge(vid(p, k + 1), v);
+            }
+            if (k > 0) {
+                add_edge(v, vid(p, k - 1));
+                add_edge(vid(p, k - 1), v);
+            }
 
-            if (!(p == 5 && p_next == 0))
-                add_edge(vid(p_next, k));
+            int p_next = p + 1;
+            int p_prev = p - 1;
 
-            if (!(p == 0 && p_prev == 5))
-                add_edge(vid(p_prev, k));
+            if (p_next < M && !(p == 5 && p_next == 0)) {
+                add_edge(v, vid(p_next, k));
+                add_edge(vid(p_next, k), v);
+            }
+
+            if (p_prev >= 0 && !(p == 0 && p_prev == 5)) {
+                add_edge(v, vid(p_prev, k));
+                add_edge(vid(p_prev, k), v);
+            }
         }
     }
 

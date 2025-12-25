@@ -61,3 +61,7 @@ std::vector<uint64_t> restore_path(uint64_t target,
 
     return path;
 }
+
+void Satellite::update_node() {
+    
+}

@@ -8,6 +8,8 @@ public:
     Virtual_node(uint64_t vid, double lat, double lon, double R);
 
     void change_sid(uint64_t sid);
+
+    coord get_coord() const;
 private:
     uint64_t v_id;
     std::optional<uint64_t> s_id;

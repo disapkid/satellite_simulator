@@ -14,6 +14,10 @@ Virtual_node::Virtual_node(uint64_t vid, double lat, double lon, double R) : v_i
     };
 }
 
+coord Virtual_node::get_coord() const {
+    return coordinates;
+}
+
 // Разбиение поверхности Земли на сервисные ячейки и привязка V_Id к этим ячейкам
 std::unordered_map<uint64_t, Virtual_node> buildEarthGrid(int M, int N) {
     std::unordered_map<uint64_t, Virtual_node> grid;
