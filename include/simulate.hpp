@@ -1,3 +1,4 @@
+#pragma once
 #include <satellite.hpp>
 #include <thread>
 #include <vector>

@@ -25,6 +25,8 @@ public:
 
     coord get_pos() const;
 
+    void 
+
 private:
     double norm(const coord& r) const;
 
@@ -34,7 +36,7 @@ private:
 
     coord current_coord{};
     coord velocity{};
-    
+     
     static constexpr double Re = 6371e3;    
     static constexpr double mu = 3.986004415e14;  
 };
