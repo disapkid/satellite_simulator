@@ -1,49 +1,50 @@
 #pragma once
 #include <cstdint>
 #include <cmath>
+#include <mutex>
+#include <optional>
 
 struct coord {
-    double x;
-    double y;
-    double z;
+    double x, y, z;
+};
+
+struct spherical_coord {
+    double r;  
+    double lat;  
+    double lon;  
+};
+
+struct spherical_vel {
+    double dr;    
+    double dlat;  
+    double dlon;  
 };
 
 class Satellite final {
-public:     
-    Satellite(double height_m = 0.0) {
-        current_coord = {Re + height_m, 0.0, 0.0};
-
-        const double r = norm(current_coord);
-        velocity = {0.0, std::sqrt(mu / r), 0.0};
-    }
+public:
+    Satellite(double height_m = 0.0);
 
     void step(double dt);
 
-    void set_coord(const coord& r);
+    coord get_pos() const; 
 
-    void set_velocity(const coord& v);
-
-    coord get_pos() const;
-
-    void update_node();
+    void set_coord_sph(const spherical_coord& r) { current_coord = r; }
+    void set_velocity_sph(const spherical_vel& v) { velocity = v; }
 
 private:
-    double norm(const coord& r) const;
+    spherical_vel accel(const spherical_coord& s, const spherical_vel& v) const;
 
-    coord accel(const coord& r) const;
+    spherical_coord current_coord{};
+    spherical_vel   velocity{};
 
-    coord accel_j(const coord& r) const;
-
-    coord current_coord{};
-    coord velocity{};
-     
-    static constexpr double Re = 6371e3;    
-    static constexpr double mu = 3.986004415e14;  
+    static constexpr double Re = 6371e3;
+    static constexpr double mu = 3.986004415e14;
 };
 
+struct Satellite_node {
+    void find_Vid();
 
-struct Satellite_node{
     Satellite sat;
-    uint64_t s_id;
-    uint64_t v_id;
+    uint64_t s_id{};
+    std::optional<uint64_t> v_id = std::nullopt;
 };

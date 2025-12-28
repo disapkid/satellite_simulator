@@ -1,67 +1,64 @@
-#include <graph.hpp>
+#pragma once
 #include <queue>
-#include <algorithm>
+#include <unordered_map>
+#include <vector>
 #include <limits>
+#include <algorithm>
+#include <graph.hpp>
 
-struct DijkstraResult {
-    std::unordered_map<uint64_t, double> dist;
-    std::unordered_map<uint64_t, uint64_t> prev;
+struct PathResult {
+    double distance;              
+    std::vector<uint64_t> path;      
 };
 
-DijkstraResult dijkstra(const VirtualGraph& g, uint64_t source) {
+PathResult dijkstra (
+    const VirtualGraph& g,
+    uint64_t start,
+    uint64_t goal ) 
+{
     constexpr double INF = std::numeric_limits<double>::infinity();
-    DijkstraResult res;
 
-    for (const auto& [vid, _] : g.nodes) {
-        res.dist[vid] = INF;
+    std::unordered_map<uint64_t, double> dist;
+    std::unordered_map<uint64_t, uint64_t> prev;
+
+    for (const auto& [v, _] : g.adj) {
+        dist[v] = INF;
     }
-    res.dist[source] = 0.0;
+    dist[start] = 0.0;
 
-    using QNode = std::pair<double, uint64_t>; 
+    using QNode = std::pair<double, uint64_t>;
     std::priority_queue<QNode, std::vector<QNode>, std::greater<>> pq;
-    pq.push({0.0, source});
+    pq.push({0.0, start});
 
     while (!pq.empty()) {
-        auto [d, v] = pq.top();
+        auto [d, u] = pq.top();
         pq.pop();
 
-        if (d > res.dist[v])
-            continue;
+        if (d > dist[u]) continue;
+        if (u == goal) break;
 
-        if (!g.adj.contains(v))
-            continue;
-
-        for (const auto& e : g.adj.at(v)) {
+        for (const Edge& e : g.adj.at(u)) {
             double nd = d + e.weight;
-
-            if (nd < res.dist[e.to]) {
-                res.dist[e.to] = nd;
-                res.prev[e.to] = v;
+            if (nd < dist[e.to]) {
+                dist[e.to] = nd;
+                prev[e.to] = u;
                 pq.push({nd, e.to});
             }
         }
     }
-    return res;
-}
 
-// Вывод пути от узла А до узла В
-std::vector<uint64_t> restore_path(uint64_t target,
-                                   const std::unordered_map<uint64_t, uint64_t>& prev) {
-    std::vector<uint64_t> path;
+    PathResult res;
+    res.distance = dist[goal];
 
-    uint64_t cur = target;
-    path.push_back(cur);
-
-    while (prev.contains(cur)) {
-        cur = prev.at(cur);
-        path.push_back(cur);
+    if (res.distance == INF) {
+        return res;
     }
 
-    std::reverse(path.begin(), path.end());
+    for (uint64_t v = goal; v != start; v = prev[v]) {
+        res.path.push_back(v);
+    }
+    res.path.push_back(start);
+    std::reverse(res.path.begin(), res.path.end());
 
-    return path;
-}
-
-void Satellite::update_node() {
-    
+    return res;
 }
